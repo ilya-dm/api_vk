@@ -1,20 +1,26 @@
 import requests
 import time
+from pprint import pprint
+
 with open('token.txt') as f:
     access_token = f.read()
 first_user_id = 72625041
 second_user_id = 145594749
+frlist =list()
 
 class User:
+
     def __init__(self, id):
         self.token = access_token
         self.id = id
         self.link = 'https://vk.com/id' + str(self.id)
+    def __str__(self):
+        return self.link
 
     def get_mutual_friends(self, user_id, target_id):
         self.user_id = user_id
         self.target_id = target_id
-        mutual_friends = []
+        mutual_friends = list()
         first_user = requests.get('https://api.vk.com/method/users.get',
                                   params={'access_token': access_token, 'user_id': user_id, 'v': '5.52',
                                           'fields': ['first_name', 'last_name']}).json()['response']
@@ -27,7 +33,7 @@ class User:
 
         params = {'access_token': access_token,
                   'source_uid': user_id,
-                  'target_uid': self.target_id,
+                  'target_uid': target_id,
                   'v': '5.52'}
         response = requests.get('https://api.vk.com/method/friends.getMutual', params=params)
         for ID in response.json()['response']:
@@ -46,9 +52,14 @@ class User:
             last_name = resp['last_name']
             ID = str(resp['id'])
             link = 'https://vk.com/id' + ID
-            user
-            print(f'{first_name} {last_name}: {link}')
+            frlist.append(f'{first_name} {last_name}: {link}')
+        return frlist
+    def __and__(self, other):
+        return self.get_mutual_friends(user_id=self.id, target_id=other.id)
 
 
 user = User(72625041)
-user.get_mutual_friends(first_user_id, second_user_id)
+print(user)
+
+user2 = User(145594749)
+pprint(user & user2)
